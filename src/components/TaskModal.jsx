@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { incrementalCounter } from '../lib/generator.js';
 
-const idGen = incrementalCounter(1000);
+const idGen = incrementalCounter(1);
 
 export default function TaskModal({ isOpen, onClose, onCreate, columnId }) {
     const [title, setTitle] = useState('');
