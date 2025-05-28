@@ -5,3 +5,9 @@
 body {
   @apply bg-white text-black;
 }
+
+.rbd-placeholder{height:0 !important; margin:0 !important; padding:0 !important;}
+
+.priority-low    {border-left:4px solid #22c55e;}
+.priority-medium {border-left:4px solid #eab308;}
+.priority-high   {border-left:4px solid #dc2626;}

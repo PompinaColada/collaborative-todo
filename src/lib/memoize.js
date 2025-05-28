@@ -7,7 +7,7 @@ export function memoize(fn, options) {
         ...options
     };
 
-    const mem = new Map(); // Кеш
+    const mem = new Map();
 
     function clearOldest() {
         if (mem.size <= config.maxSize) return;
