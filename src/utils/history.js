@@ -1,10 +1,12 @@
+import { logDecorator } from "./log.js";
+
 let store = [];
 
-export function log(type, task = {}) {
-    const { id, title = '', columnId = '' } = task;
+function logRaw(type, task = {}) {
+    const { id, title = "", columnId = "" } = task;
     store.unshift({
-        uid : Date.now().toString(36),
-        ts  : Date.now(),
+        uid: Date.now().toString(36),
+        ts: Date.now(),
         type,
         id,
         title,
@@ -13,4 +15,9 @@ export function log(type, task = {}) {
     store = store.slice(0, 100);
 }
 
-export function getHistory() { return store; }
+function getHistoryRaw() {
+    return store;
+}
+
+export const log = logDecorator("DEBUG")(logRaw);
+export const getHistory = logDecorator("INFO")(getHistoryRaw);

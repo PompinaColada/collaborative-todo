@@ -1,16 +1,23 @@
-const KEY = 'todo-board-state';
+import { logDecorator } from "./log.js";
 
-export function loadState() {
+const STORAGE_KEY = "todo-board-state";
+
+function loadStateRaw() {
     try {
-        const raw = localStorage.getItem(KEY);
-        return raw ? JSON.parse(raw) : null;
+        const data = localStorage.getItem(STORAGE_KEY);
+        return data ? JSON.parse(data) : null;
     } catch {
         return null;
     }
 }
 
-export function saveState(state) {
+function saveStateRaw(state) {
     try {
-        localStorage.setItem(KEY, JSON.stringify(state));
-    } catch {/* ignore */}
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+
+    }
 }
+
+export const loadState = logDecorator("INFO")(loadStateRaw);
+export const saveState = logDecorator("DEBUG")(saveStateRaw);
