@@ -1,4 +1,3 @@
-// 1) callback-based asyncFilter
 export function asyncFilterCb(arr, predicate, callback, delay = 200) {
     const result = [];
     let idx = 0;
@@ -21,7 +20,6 @@ export function asyncFilterCb(arr, predicate, callback, delay = 200) {
     next();
 }
 
-// 2) promise-based asyncFilter with cancellation
 export function asyncFilter(arr, predicate, options = {}) {
     const { delay = 200, signal } = options;
     return new Promise((res, rej) => {
@@ -55,7 +53,6 @@ export function asyncFilter(arr, predicate, options = {}) {
     });
 }
 
-// 3) async/await wrapper (приклад)
 export async function asyncFilterAwait(arr, predicate, options = {}) {
     return await asyncFilter(arr, predicate, options);
 }
