@@ -5,6 +5,7 @@ import TaskModal from "../components/TaskModal.jsx";
 import { loadState, saveState } from "../utils/storage.js";
 import { log } from "../utils/history.js";
 import { asyncToggleDone, asyncRemoveTask } from "../utils/asyncHelper.js";
+import { emit } from "../utils/emitter.js";
 
 const initialState = {
     columns: [{ id: "col-pile", title: "Куча", order: 0, collapsed: false }],
@@ -56,6 +57,7 @@ export default function BoardsPage() {
         const id = `col-${Date.now().toString(36)}`;
         setColumns((cs) => [...cs, { id, title, order: cs.length, collapsed: false }]);
         log("column.create", { id, title });
+        emit("column:create", { id, title });
         setCurrentCol(id);
     };
 
@@ -64,6 +66,7 @@ export default function BoardsPage() {
         if (!title) return;
         setColumns((cs) => cs.map((c) => (c.id === id ? { ...c, title } : c)));
         log("column.rename", { id, title });
+        emit("column:rename", { id, title });
     };
 
     const removeColumn = (id) => {
@@ -72,10 +75,13 @@ export default function BoardsPage() {
         setColumns((cs) => cs.filter((c) => c.id !== id));
         log("column.delete", { id });
         setCurrentCol("col-pile");
+        emit("column:delete", { id });
     };
 
-    const toggleCollapse = (id) =>
-        setColumns((cs) => cs.map((c) => (c.id === id ? { ...c, collapsed: !c.collapsed } : c)));
+    function toggleCollapse(id) {
+        setColumns(cs => cs.map(c => c.id === id ? { ...c, collapsed: !c.collapsed } : c));
+        emit("column:collapseToggle", { id });
+    }
 
     const reorderColumns = (from, to) => {
         const list = [...columns].sort((a, b) => a.order - b.order);
@@ -84,6 +90,7 @@ export default function BoardsPage() {
         list.forEach((c, i) => (c.order = i));
         setColumns(list);
         log("column.reorder", { from, to });
+        emit("column:reorder", { from, to });
     };
 
     const addTask = (t) => {
@@ -96,11 +103,13 @@ export default function BoardsPage() {
         };
         setTasks((ts) => [...ts, newTask]);
         log("task.create", { id: newTask.id, title: newTask.title, columnId: newTask.columnId });
+        emit("task:create", newTask);
     };
 
     const updateTask = (upd) => {
         setTasks((ts) => ts.map((t) => (t.id === upd.id ? upd : t)));
         log("task.update", { id: upd.id, title: upd.title, columnId: upd.columnId });
+        emit("task:update", upd);
     };
 
     const toggleDone = async (id) => {
@@ -114,6 +123,7 @@ export default function BoardsPage() {
         }
         setTasks(updated);
         log("task.toggle", { id: me.id, title: me.title, columnId: me.columnId });
+        emit("task:toggle", me);
     };
 
     const deleteTask = async (id) => {
@@ -121,6 +131,7 @@ export default function BoardsPage() {
         const upd = await asyncRemoveTask(tasks, id.toString(), new AbortController().signal);
         setTasks(upd);
         log("task.delete", { id: me.id, title: me.title, columnId: me.columnId });
+        emit("task:delete", me);
     };
 
     const moveTask = (id, from, to, idx) => {
@@ -142,6 +153,7 @@ export default function BoardsPage() {
             });
         });
         log("task.move", { id, from, to });
+        emit("task:move", { id, from, to, idx });
     };
 
     const reorderTask = (colId, from, to) => {
@@ -153,6 +165,7 @@ export default function BoardsPage() {
             return ts.map((t) => list.find((x) => x.id === t.id) ?? t);
         });
         log("task.reorder", { colId, from, to });
+        emit("task:reorder", { colId, from, to });
     };
 
     const openNewModal = () => {

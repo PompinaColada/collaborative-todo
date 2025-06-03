@@ -54,7 +54,9 @@ class EventEmitter {
         });
     }
 
-    clearAll() { this.#listeners = Object.create(null); }
+    clearAll() {
+        this.#listeners = Object.create(null);
+    }
 
     #matchWildcard(pattern, event) {
         if (!pattern.includes('*')) return pattern === event;
@@ -64,5 +66,8 @@ class EventEmitter {
 }
 
 export const emitter = new EventEmitter();
-export const { on, once, off, emit } = emitter;
+export const on   = emitter.on.bind(emitter);
+export const once = emitter.once.bind(emitter);
+export const off  = emitter.off.bind(emitter);
+export const emit = emitter.emit.bind(emitter);
 export { EventEmitter };

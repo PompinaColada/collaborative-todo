@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { emit, on } from "../utils/emitter.js";
 import { incrementalCounter } from '../lib/generator.js';
 
 const idGen = incrementalCounter(1);
@@ -14,19 +15,31 @@ export default function TaskModal({
     const [subs, setSubs]   = useState([]);
 
     useEffect(() => {
+        if (isOpen) {
+            emit("modal:open", task ? { mode: "edit", id: task.id } : { mode: "create" });
+        } else {
+            emit("modal:close");
+        }
+    }, [isOpen, task]);
+
+    useEffect(() => {
         if (task) {
             setTitle(task.title);
             setBody(task.body);
-            setPr(task.priority || 'low');
+            setPr(task.priority || "low");
             setSubs(task.sub || []);
             if (task.deadline) {
-                const [d, t] = task.deadline.split('T');
+                const [d, t] = task.deadline.split("T");
                 setDatePart(d);
-                setTimePart(t?.slice(0,5) || '');
+                setTimePart(t?.slice(0, 5) || "");
             }
         } else {
-            setTitle(''); setBody(''); setPr('low'); setSubs([]);
-            setDatePart(''); setTimePart('');
+            setTitle("");
+            setBody("");
+            setPr("low");
+            setSubs([]);
+            setDatePart("");
+            setTimePart("");
         }
     }, [task, isOpen]);
 
@@ -40,6 +53,8 @@ export default function TaskModal({
     const updateSub = (subId, field, val) =>
         setSubs(s => {
             const next = s.map(x => x.id === subId ? { ...x, [field]: val } : x);
+            emit("subtask:update", { taskId: task?.id, sub: next.find((x) => x.id === subId) }); /* 🟢 нове */
+
             if (task) {
                 if (next.every(x => x.done)) {
                     onUpdate({ ...task, sub: next, done: true, completedAt: Date.now() });
@@ -50,16 +65,21 @@ export default function TaskModal({
             return next;
         });
 
-    const removeSub = id => setSubs(s => s.filter(x => x.id !== id));
+    const removeSub = (id) => {
+        setSubs((s) => s.filter((x) => x.id !== id));
+        emit("subtask:remove", { taskId: task?.id, subId: id }); /* 🟢 нове */
+    };
 
     const handleSubmit = e => {
         e.preventDefault();
         const clean = subs.filter(s => s.text.trim());
         const deadlineISO = datePart ? `${datePart}T${timePart || '23:59'}` : null;
+
         if (task) {
             onUpdate({ ...task, title, body, priority, deadline: deadlineISO, sub: clean });
+            emit("task:update", { id: task.id });
         } else {
-            onCreate({
+            const newTask = {
                 id: idGen.next().value.toString(),
                 title,
                 body,
@@ -71,7 +91,9 @@ export default function TaskModal({
                 completedAt: null,
                 order: 0,
                 sub: clean,
-            });
+            };
+            onCreate(newTask);
+            emit("task:create", newTask);
         }
         onClose();
     };
