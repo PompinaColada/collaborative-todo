@@ -1,58 +1,55 @@
-export function asyncFilterCb(arr, predicate, callback, delay = 200) {
-    const result = [];
-    let idx = 0;
-
+export function asyncFilterCb(arr, predicate, cb, delay = 200) {
+    let i = 0
+    const filtered = []
     function next() {
-        if (idx >= arr.length) {
-            callback(null, result);
-            return;
+        if (i >= arr.length) {
+            cb(null, filtered)
+            return
         }
-        const item = arr[idx++];
-        // симулюємо асинхронність
-        setTimeout(() => {
-            if (predicate(item, idx - 1, arr)) {
-                result.push(item);
-            }
-            next();
-        }, delay);
-    }
 
-    next();
+        setTimeout(() => {
+            const item = arr[i]
+            if (predicate(item, i, arr)) {
+                filtered.push(item)
+            }
+            i++
+            next()
+        }, delay)
+    }
+    next()
 }
 
 export function asyncFilter(arr, predicate, options = {}) {
-    const { delay = 200, signal } = options;
-    return new Promise((res, rej) => {
-        if (signal?.aborted) return rej(new Error('aborted'));
-        const out = [];
-        let idx = 0;
-        let timer;
+    const delay = options.delay || 200
+    const signal = options.signal
 
-        function step() {
-            if (signal?.aborted) {
-                clearTimeout(timer);
-                return rej(new Error('aborted'));
-            }
-            if (idx >= arr.length) {
-                return res(out);
-            }
-            const item = arr[idx++];
-            timer = setTimeout(() => {
-                try {
-                    if (predicate(item, idx - 1, arr)) {
-                        out.push(item);
-                    }
-                    step();
-                } catch (e) {
-                    rej(e);
-                }
-            }, delay);
+    return new Promise((resolve, reject) => {
+        if (signal && signal.aborted) {
+            return reject(new Error('aborted'))
         }
-
-        step();
-    });
+        let i = 0
+        const filtered = []
+        let timerId
+        function step() {
+            if (signal && signal.aborted) {
+                clearTimeout(timerId)
+                return reject(new Error('aborted'))
+            }
+            if (i >= arr.length) {
+                return resolve(filtered)
+            }
+            const item = arr[i++]
+            timerId = setTimeout(() => {
+                if (predicate(item, i - 1, arr)) {
+                    filtered.push(item)
+                }
+                step()
+            }, delay)
+        }
+        step()
+    })
 }
 
 export async function asyncFilterAwait(arr, predicate, options = {}) {
-    return await asyncFilter(arr, predicate, options);
+    return await asyncFilter(arr, predicate, options)
 }

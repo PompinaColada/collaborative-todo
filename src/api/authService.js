@@ -15,13 +15,13 @@ export function clearTokens()     {
 }
 
 export async function login(email, password) {
-    //
+    //Типу заглушка
     setTokens("MOCK_ACCESS", "MOCK_REFRESH");
     return true;
 }
 
 export async function register(email, password) {
-    //
+    //Тут також
     setTokens("MOCK_ACCESS", "MOCK_REFRESH");
     return true;
 }

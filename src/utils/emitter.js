@@ -1,14 +1,6 @@
 class EventEmitter {
     #listeners = Object.create(null);
 
-    /** Підписка
-     *  @param {string} event   — ім’я (можна 'task:*')
-     *  @param {Function} fn    — колбек-обробник
-     *  @param {Object} [opt]
-     *  @param {boolean} [opt.once=false] — виконати один раз
-     *  @param {number}  [opt.priority=0]— більший pr  ⇒ раніше
-     *  @returns {Function} unsubscribe
-     */
     on(event, fn, opt = {}) {
         const { once = false, priority = 0 } = opt;
         (this.#listeners[event] = this.#listeners[event] || []).push({ fn, once, priority });
@@ -27,12 +19,6 @@ class EventEmitter {
         if (this.#listeners[event].length === 0) delete this.#listeners[event];
     }
 
-    /** emit
-     *  @param {string} event
-     *  @param {any} payload
-     *  @param {Object} [opt]
-     *  @param {boolean} [opt.async=false] — викликати колбеки в мікротасці
-     */
     emit(event, payload, opt = {}) {
         const { async = false } = opt;
         const exec = (l) => {
@@ -49,7 +35,7 @@ class EventEmitter {
 
         callList.forEach(l => {
             if (async) Promise.resolve().then(() => exec(l));
-            else       exec(l);
+            else exec(l);
             if (l.once) this.off(event, l.fn);
         });
     }
@@ -58,9 +44,9 @@ class EventEmitter {
         this.#listeners = Object.create(null);
     }
 
-    #matchWildcard(pattern, event) {
-        if (!pattern.includes('*')) return pattern === event;
-        const base = pattern.slice(0, pattern.indexOf('*'));
+    #matchWildcard(key, event) {
+        if (!key.includes('*')) return key === event;
+        const base = key.slice(0, key.indexOf('*'));
         return event.startsWith(base);
     }
 }

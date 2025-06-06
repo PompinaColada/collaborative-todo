@@ -67,7 +67,7 @@ export default function TaskModal({
 
     const removeSub = (id) => {
         setSubs((s) => s.filter((x) => x.id !== id));
-        emit("subtask:remove", { taskId: task?.id, subId: id }); /* 🟢 нове */
+        emit("subtask:remove", { taskId: task?.id, subId: id });
     };
 
     const handleSubmit = e => {

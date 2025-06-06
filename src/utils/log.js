@@ -1,3 +1,10 @@
+function doTimeStamp(start) {
+    return {
+        ts: new Date().toISOString(),
+        duration: Date.now() - start,
+    };
+}
+
 export function logDecorator(level = "INFO") {
     return function (func) {
         return function (...args) {
@@ -15,20 +22,18 @@ export function logDecorator(level = "INFO") {
                 if (result instanceof Promise) {
                     return result
                         .then((res) => {
-                            const duration = Date.now() - start;
-                            const tsOk = new Date().toISOString();
+                            const { ts, duration } = doTimeStamp(start);
                             console.log(
-                                `[${tsOk}] [${level}] ${func.name} resolved with:`,
+                                `[${ts}] [${level}] ${func.name} resolved with:`,
                                 res,
                                 `(${duration}ms)`
                             );
                             return res;
                         })
                         .catch((err) => {
-                            const duration = Date.now() - start;
-                            const tsErr = new Date().toISOString();
+                            const { ts, duration } = doTimeStamp(start);
                             console.error(
-                                `[${tsErr}] [ERROR] ${func.name} rejected:`,
+                                `[${ts}] [ERROR] ${func.name} rejected:`,
                                 err,
                                 `(${duration}ms)`
                             );
@@ -36,19 +41,17 @@ export function logDecorator(level = "INFO") {
                         });
                 }
 
-                const duration = Date.now() - start;
-                const tsOk = new Date().toISOString();
+                const { ts, duration } = doTimeStamp(start);
                 console.log(
-                    `[${tsOk}] [${level}] ${func.name} returned:`,
+                    `[${ts}] [${level}] ${func.name} returned:`,
                     result,
                     `(${duration}ms)`
                 );
                 return result;
             } catch (err) {
-                const duration = Date.now() - start;
-                const tsErr = new Date().toISOString();
+                const { ts, duration } = doTimeStamp(start);
                 console.error(
-                    `[${tsErr}] [ERROR] ${func.name} threw error:`,
+                    `[${ts}] [ERROR] ${func.name} threw error:`,
                     err,
                     `(${duration}ms)`
                 );
